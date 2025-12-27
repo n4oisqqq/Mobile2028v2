@@ -112,7 +112,7 @@ export default function Home() {
 
         {/* Weather Widget - Enhanced readability and spacing */}
         {!loading && weather && (
-          <div className="px-4 pt-4 flex justify-end" data-testid="weather-widget-container">
+          <div className="px-4 pt-4 flex justify-center" data-testid="weather-widget-container">
             <div
               className="w-64 rounded-2xl border border-white/30 bg-gradient-to-br from-white/25 to-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-4"
               data-testid="weather-widget"
