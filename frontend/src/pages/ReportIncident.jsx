@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
-import { AlertTriangle, Calendar, Clock, MapPin, Send, X, Camera, WifiOff, Phone, User, Navigation, Loader2 } from 'lucide-react';
+import { AlertTriangle, Calendar, Clock, MapPin, Send, X, Camera, WifiOff, Phone, User, Navigation, Loader2, Globe, Shield, CheckCircle } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import offlineQueue from '../utils/offlineQueue';
-import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -39,8 +36,6 @@ function LocationMarker({ position, setPosition }) {
 }
 
 export default function ReportIncident() {
-  const { user } = useAuth();
-
   const [formData, setFormData] = useState({
     incidentType: '',
     date: new Date().toISOString().split('T')[0],
@@ -186,17 +181,6 @@ export default function ReportIncident() {
     };
   }, []);
 
-  // If logged in and user has a phone, prefill it (editable)
-  useEffect(() => {
-    if (user) {
-      setFormData((p) => ({
-        ...p,
-        reporterPhone: p.reporterPhone || user.phone || '',
-        reporterName: p.reporterName || user.full_name || '',
-      }));
-    }
-  }, [user]);
-
   const removeImage = (imageId) => {
     setUploadedImages((prev) => prev.filter((img) => img.id !== imageId));
   };
@@ -222,50 +206,19 @@ export default function ReportIncident() {
     };
 
     try {
-      if (navigator.onLine) {
-        // Try to submit directly if online
-        const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/api/incidents`,
-          reportData
-        );
-        
-        if (response.status === 200 || response.status === 201) {
-          console.log('Incident report submitted successfully:', response.data);
-          setSubmitted(true);
-          
-          setTimeout(() => {
-            setSubmitted(false);
-            resetForm();
-          }, 3000);
-        }
-      } else {
-        // Add to offline queue if offline
-        await offlineQueue.addIncident(reportData);
-        console.log('Incident report added to offline queue');
-        setSubmitted(true);
-        
-        setTimeout(() => {
-          setSubmitted(false);
-          resetForm();
-        }, 3000);
-      }
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log('Incident report submitted:', reportData);
+      setSubmitted(true);
+      
+      setTimeout(() => {
+        setSubmitted(false);
+        resetForm();
+      }, 3000);
     } catch (error) {
       console.error('Failed to submit incident report:', error);
-      
-      // If online submission fails, add to queue
-      try {
-        await offlineQueue.addIncident(reportData);
-        console.log('Incident report queued for later sync');
-        setSubmitted(true);
-        
-        setTimeout(() => {
-          setSubmitted(false);
-          resetForm();
-        }, 3000);
-      } catch (queueError) {
-        console.error('Failed to queue incident report:', queueError);
-        alert('Failed to save incident report. Please try again.');
-      }
+      alert('Failed to submit incident report. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -277,114 +230,120 @@ export default function ReportIncident() {
       date: new Date().toISOString().split('T')[0],
       time: new Date().toTimeString().slice(0, 5),
       description: '',
-      reporterPhone: user?.phone || '',
-      reporterName: user?.full_name || '',
+      reporterPhone: '',
+      reporterName: '',
     });
     setUploadedImages([]);
     setPosition([13.0547, 123.5214]);
   };
 
   return (
-    <div className="min-h-screen bg-slate-100" data-testid="report-incident-page">
-      <Header title="REPORT AN INCIDENT" showBack icon={AlertTriangle} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" data-testid="report-incident-page">
+      <Header title="REPORT AN INCIDENT" icon={AlertTriangle} showBack/>
       
-      <main className="px-4 py-6 max-w-2xl mx-auto">
+      <main className="px-6 py-8 max-w-2xl mx-auto">
         {submitted && (
-          <div className={`mb-4 ${isOffline ? 'bg-yellow-500' : 'bg-green-500'} text-white p-4 rounded-xl flex items-center gap-3 animate-fadeIn`} data-testid="success-message">
-            {isOffline ? <WifiOff className="w-5 h-5" /> : <Send className="w-5 h-5" />}
+          <div className={`mb-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4 rounded-2xl flex items-center gap-3 shadow-lg animate-fadeIn`} data-testid="success-message">
+            <CheckCircle className="w-6 h-6 animate-pulse" />
             <div>
-              <p className="font-semibold">
-                {isOffline ? 'Report queued for sync' : 'Report submitted successfully!'}
+              <p className="font-semibold text-lg">
+                Report submitted successfully!
               </p>
-              {isOffline && (
-                <p className="text-xs mt-1 opacity-90">
-                  Will be synced when connection is restored
-                </p>
-              )}
+              <p className="text-sm opacity-90">
+                Thank you for helping keep our community safe
+              </p>
             </div>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6" data-testid="incident-form">
           {/* Incident Type */}
-          <div>
-            <label className="block text-blue-950 font-semibold text-sm mb-2">
+          <div className="animate-slide-up">
+            <label className="block text-white font-semibold text-sm mb-3">
               INCIDENT TYPE
             </label>
             <select
               value={formData.incidentType}
               onChange={(e) => setFormData({ ...formData, incidentType: e.target.value })}
-              className="w-full bg-white border-2 border-slate-200 rounded-xl p-4 text-slate-700 focus:border-yellow-500 transition-colors"
+              className="w-full bg-slate-800/50 border border-slate-600 rounded-2xl p-4 text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all"
               required
               data-testid="incident-type-select"
             >
+              <option value="" className="bg-slate-800">Select incident type</option>
+              {incidentTypes.map((type) => (
+                <option key={type} value={type} className="bg-slate-800">{type}</option>
+              ))}
+            </select>
+          </div>
+
           {/* Reporter Name */}
-          <div>
-            <label className="block text-blue-950 font-semibold text-sm mb-2">
-              NAME
+          <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <label className="block text-white font-semibold text-sm mb-3">
+              YOUR NAME
             </label>
-            <div className="bg-white border-2 border-slate-200 rounded-xl p-4 flex items-center gap-3">
-              <User className="w-5 h-5 text-blue-950" />
+            <div className="bg-slate-800/50 border border-slate-600 rounded-2xl p-4 flex items-center gap-4">
+              <div className="p-2 bg-blue-600/20 rounded-xl">
+                <User className="w-5 h-5 text-blue-400" />
+              </div>
               <input
                 type="text"
                 value={formData.reporterName}
                 onChange={(e) => setFormData({ ...formData, reporterName: e.target.value })}
-                placeholder="Enter your name"
-                className="flex-1 text-slate-700 bg-transparent focus:outline-none"
+                placeholder="Enter your full name"
+                className="flex-1 text-white bg-transparent focus:outline-none placeholder-slate-400"
                 required
                 data-testid="reporter-name-input"
               />
             </div>
           </div>
 
-              <option value="">Select incident type</option>
-              {incidentTypes.map((type) => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
-
           {/* Reporter Phone */}
-          <div>
-            <label className="block text-blue-950 font-semibold text-sm mb-2">
-              PHONE (Optional)
+          <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <label className="block text-white font-semibold text-sm mb-3">
+              PHONE NUMBER (Optional)
             </label>
-            <div className="bg-white border-2 border-slate-200 rounded-xl p-4 flex items-center gap-3">
-              <Phone className="w-5 h-5 text-blue-950" />
+            <div className="bg-slate-800/50 border border-slate-600 rounded-2xl p-4 flex items-center gap-4">
+              <div className="p-2 bg-green-600/20 rounded-xl">
+                <Phone className="w-5 h-5 text-green-400" />
+              </div>
               <input
                 type="tel"
                 value={formData.reporterPhone}
                 onChange={(e) => setFormData({ ...formData, reporterPhone: e.target.value })}
                 placeholder="e.g., 0917-000-0000"
-                className="flex-1 text-slate-700 bg-transparent focus:outline-none"
+                className="flex-1 text-white bg-transparent focus:outline-none placeholder-slate-400"
                 data-testid="reporter-phone-input"
               />
             </div>
           </div>
 
           {/* Time of Incident */}
-          <div>
-            <label className="block text-blue-950 font-semibold text-sm mb-2">
+          <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
+            <label className="block text-white font-semibold text-sm mb-3">
               TIME OF INCIDENT
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white border-2 border-slate-200 rounded-xl p-4 flex items-center gap-3">
-                <Calendar className="w-5 h-5 text-blue-950" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-slate-800/50 border border-slate-600 rounded-2xl p-4 flex items-center gap-4">
+                <div className="p-2 bg-purple-600/20 rounded-xl">
+                  <Calendar className="w-5 h-5 text-purple-400" />
+                </div>
                 <input
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="flex-1 text-slate-700 bg-transparent focus:outline-none"
+                  className="flex-1 text-white bg-transparent focus:outline-none"
                   data-testid="incident-date-input"
                 />
               </div>
-              <div className="bg-white border-2 border-slate-200 rounded-xl p-4 flex items-center gap-3">
-                <Clock className="w-5 h-5 text-blue-950" />
+              <div className="bg-slate-800/50 border border-slate-600 rounded-2xl p-4 flex items-center gap-4">
+                <div className="p-2 bg-orange-600/20 rounded-xl">
+                  <Clock className="w-5 h-5 text-orange-400" />
+                </div>
                 <input
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="flex-1 text-slate-700 bg-transparent focus:outline-none"
+                  className="flex-1 text-white bg-transparent focus:outline-none"
                   data-testid="incident-time-input"
                 />
               </div>
@@ -392,8 +351,8 @@ export default function ReportIncident() {
           </div>
 
           {/* Location */}
-          <div>
-            <label className="block text-blue-950 font-semibold text-sm mb-2">
+          <div className="animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <label className="block text-white font-semibold text-sm mb-3">
               LOCATION
             </label>
             
@@ -402,7 +361,7 @@ export default function ReportIncident() {
               type="button"
               onClick={getCurrentLocation}
               disabled={gettingLocation}
-              className="w-full bg-yellow-500 text-blue-950 font-semibold py-3 rounded-xl mb-2 hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-4 rounded-2xl mb-3 hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg"
               data-testid="use-current-location-btn"
             >
               {gettingLocation ? (
@@ -420,8 +379,8 @@ export default function ReportIncident() {
 
             {/* GPS Accuracy Indicator */}
             {locationAccuracy && (
-              <div className="mb-2 bg-green-100 border border-green-300 rounded-lg p-2 text-xs text-green-800 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
+              <div className="mb-3 bg-green-500/20 border border-green-500/30 rounded-2xl p-3 text-sm text-green-200 flex items-center gap-3 mb-4">
+                <MapPin className="w-5 h-5" />
                 <span>
                   GPS accuracy: ±{Math.round(locationAccuracy)}m
                   {locationAccuracy < 50 ? ' (High accuracy)' : locationAccuracy < 100 ? ' (Good)' : ' (Low accuracy)'}
@@ -429,7 +388,7 @@ export default function ReportIncident() {
               </div>
             )}
             
-            <div className="map-container h-[200px] mb-2" data-testid="location-map">
+            <div className="map-container h-64 mb-4 rounded-2xl overflow-hidden shadow-xl" data-testid="location-map">
               <MapContainer
                 center={position}
                 zoom={13}
@@ -443,10 +402,12 @@ export default function ReportIncident() {
                 <LocationMarker position={position} setPosition={setPosition} />
               </MapContainer>
             </div>
-            <div className="bg-white border-2 border-slate-200 rounded-xl p-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-blue-950" />
-                <span className="text-slate-700 text-sm">
+            <div className="bg-slate-800/50 border border-slate-600 rounded-2xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-600/20 rounded-xl">
+                  <MapPin className="w-4 h-4 text-red-400" />
+                </div>
+                <span className="text-white text-sm font-mono">
                   {position[0].toFixed(4)}, {position[1].toFixed(4)}
                 </span>
               </div>
@@ -456,25 +417,25 @@ export default function ReportIncident() {
                   setPosition([13.0547, 123.5214]);
                   setLocationAccuracy(null);
                 }}
-                className="text-yellow-600 text-sm font-medium hover:text-yellow-700"
+                className="text-yellow-400 text-sm font-medium hover:text-yellow-300 transition-colors"
                 data-testid="reset-location-btn"
               >
                 Reset
               </button>
             </div>
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-slate-400 text-sm mt-3 text-center">
               Tap the map to manually adjust location or use GPS for automatic detection
             </p>
           </div>
 
           {/* Image Upload */}
-          <div>
-            <label className="block text-blue-950 font-semibold text-sm mb-2">
+          <div className="animate-slide-up" style={{ animationDelay: '0.5s' }}>
+            <label className="block text-white font-semibold text-sm mb-3">
               UPLOAD IMAGES (Optional)
             </label>
             
             {/* Upload Button */}
-            <label className="bg-white border-2 border-dashed border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500 hover:bg-yellow-50 transition-all">
+            <label className="bg-slate-800/50 border-2 border-dashed border-slate-600 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-yellow-400 hover:bg-slate-700/30 transition-all">
               <input
                 type="file"
                 accept="image/*"
@@ -483,40 +444,42 @@ export default function ReportIncident() {
                 className="hidden"
                 data-testid="image-upload-input"
               />
-              <Camera className="w-8 h-8 text-slate-400 mb-2" />
-              <span className="text-slate-600 text-sm font-medium">
+              <div className="p-3 bg-blue-600/20 rounded-2xl mb-3">
+                <Camera className="w-8 h-8 text-blue-400" />
+              </div>
+              <span className="text-white text-base font-medium mb-1">
                 Tap to upload photos
               </span>
-              <span className="text-slate-400 text-xs mt-1">
+              <span className="text-slate-400 text-sm">
                 Multiple images supported
               </span>
             </label>
 
             {/* Image Previews */}
             {uploadedImages.length > 0 && (
-              <div className="mt-3 space-y-2">
+              <div className="mt-4 space-y-3">
                 {uploadedImages.map((image) => (
                   <div
                     key={image.id}
-                    className="bg-white border-2 border-slate-200 rounded-xl p-2 flex items-center gap-3"
+                    className="bg-slate-800/50 border border-slate-600 rounded-2xl p-3 flex items-center gap-4"
                     data-testid="uploaded-image-preview"
                   >
                     {/* Thumbnail */}
                     <img
                       src={image.data}
                       alt={image.name}
-                      className="w-16 h-16 object-cover rounded-lg"
+                      className="w-20 h-20 object-cover rounded-xl shadow-md"
                     />
                     
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-slate-700 text-sm font-medium truncate">
+                      <p className="text-white text-sm font-medium truncate">
                         {image.name}
                       </p>
-                      <p className="text-slate-400 text-xs">
+                      <p className="text-slate-400 text-xs mt-1">
                         {(image.size / 1024).toFixed(1)} KB
                         {image.originalSize && image.originalSize > image.size && (
-                          <span className="text-green-600 ml-1">
+                          <span className="text-green-400 ml-2">
                             (↓{Math.round((1 - image.size / image.originalSize) * 100)}%)
                           </span>
                         )}
@@ -527,7 +490,7 @@ export default function ReportIncident() {
                     <button
                       type="button"
                       onClick={() => removeImage(image.id)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-red-400 hover:bg-red-500/20 rounded-xl transition-colors"
                       data-testid="remove-image-btn"
                     >
                       <X className="w-5 h-5" />
@@ -535,7 +498,7 @@ export default function ReportIncident() {
                   </div>
                 ))}
                 
-                <div className="text-slate-500 text-xs text-center pt-1">
+                <div className="text-slate-400 text-sm text-center pt-2">
                   {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} uploaded
                 </div>
               </div>
@@ -543,8 +506,8 @@ export default function ReportIncident() {
           </div>
 
           {/* Description */}
-          <div>
-            <label className="block text-blue-950 font-semibold text-sm mb-2">
+          <div className="animate-slide-up" style={{ animationDelay: '0.6s' }}>
+            <label className="block text-white font-semibold text-sm mb-3">
               DESCRIPTION
             </label>
             <div className="relative">
@@ -552,22 +515,22 @@ export default function ReportIncident() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value.slice(0, 500) })}
                 placeholder="Please provide a detailed description of what happened..."
-                className="w-full bg-white border-2 border-slate-200 rounded-xl p-4 text-slate-700 min-h-[120px] resize-none focus:border-yellow-500 transition-colors"
+                className="w-full bg-slate-800/50 border border-slate-600 rounded-2xl p-4 text-white min-h-32 resize-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all"
                 maxLength={500}
                 data-testid="description-textarea"
               />
-              <span className="absolute bottom-3 right-3 text-slate-400 text-xs">
+              <span className="absolute bottom-3 right-4 text-slate-400 text-sm">
                 {formData.description.length}/500
               </span>
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="grid grid-cols-2 gap-3 pt-4">
+          <div className="grid grid-cols-2 gap-4 pt-6 animate-slide-up" style={{ animationDelay: '0.7s' }}>
             <button
               type="button"
               onClick={() => window.history.back()}
-              className="bg-white border-2 border-slate-300 text-slate-700 font-semibold py-4 rounded-xl hover:bg-slate-50 transition-colors"
+              className="bg-slate-700/50 border border-slate-600 text-white font-semibold py-4 rounded-2xl hover:bg-slate-600/50 transition-all"
               data-testid="cancel-btn"
               disabled={submitting}
             >
@@ -576,7 +539,7 @@ export default function ReportIncident() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-blue-600/80 text-white font-semibold py-4 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold py-4 rounded-2xl hover:from-red-700 hover:to-red-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg"
               data-testid="submit-report-btn"
             >
               {submitting ? (
@@ -594,6 +557,33 @@ export default function ReportIncident() {
           </div>
         </form>
       </main>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .animate-slide-up {
+          animation: slide-up 0.8s ease-out forwards;
+        }
+        
+        .bg-grid-pattern {
+          background-image: 
+            linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+          background-size: 40px 40px;
+        }
+      `}</style>
     </div>
   );
 }

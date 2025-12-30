@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, FileText, Cloud, Sun, CloudRain, CloudSnow, Wind } from 'lucide-react';
+import { Phone, FileText, Cloud, Sun, CloudRain, CloudSnow, Wind, AlertTriangle, Zap, Shield, Waves, Thermometer, Droplets, Eye } from 'lucide-react';
 import { Header } from '../components/Header';
 
 export default function Home() {
@@ -9,6 +9,7 @@ export default function Home() {
   const [weather, setWeather] = useState(null);
   const [forecast, setForecast] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Time-based background image logic
   useEffect(() => {
@@ -34,6 +35,15 @@ export default function Home() {
     const interval = setInterval(updateBackground, 60000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  // Update current time every minute
+  useEffect(() => {
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+
+    return () => clearInterval(timeInterval);
   }, []);
 
   // Fetch weather data
@@ -93,14 +103,43 @@ export default function Home() {
     return days[date.getDay()];
   };
 
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatDateFull = (date) => {
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat relative"
+      className="min-h-screen bg-cover bg-center bg-no-repeat relative overflow-hidden"
       style={{ backgroundImage: `url(/${backgroundImage})` }}
       data-testid="home-page"
     >
-      {/* Overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/30"></div>
+      {/* Animated overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-black/40"></div>
+      
+      {/* Animated particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 3}s`
+            }}
+          ></div>
+        ))}
+      </div>
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
@@ -114,31 +153,52 @@ export default function Home() {
         {!loading && weather && (
           <div className="px-4 pt-4 flex justify-center" data-testid="weather-widget-container">
             <div
-              className="w-80 rounded-2xl border border-white/30 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-x1 shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-4"
+              className="w-80 rounded-2xl border border-white/30 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-4 animate-slide-down"
               data-testid="weather-widget"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
                   {(() => {
                     const WeatherIcon = getWeatherIcon(weather.weather[0].id);
-                    return <WeatherIcon className="w-10 h-10 text-yellow-300 drop-shadow-lg" />;
+                    return <WeatherIcon className="w-12 h-12 text-yellow-300 drop-shadow-lg animate-pulse" />;
                   })()}
                   <div className="leading-none">
-                    <div className="text-white text-2xl font-bold tracking-tight">
+                    <div className="text-white text-3xl font-bold tracking-tight">
                       {Math.round(weather.main.temp)}°C
                     </div>
-                    <div className="text-white/85 text-xs mt-1">
+                    <div className="text-white/85 text-sm mt-1">
                       {Math.round((weather.main.temp * 9/5) + 32)}°F
                     </div>
                   </div>
                 </div>
-                <div className="text-white/90 text-xs text-right max-w-[120px]">
-                  <span className="capitalize">{weather.weather[0].description}</span>
+                <div className="text-white/90 text-sm text-right max-w-[120px]">
+                  <span className="capitalize block font-semibold">{weather.weather[0].main}</span>
+                  <span className="text-xs opacity-80">{weather.name}</span>
+                </div>
+              </div>
+
+              {/* Weather details */}
+              <div className="grid grid-cols-2 gap-3 mb-3 text-xs">
+                <div className="flex items-center gap-2 text-white/80">
+                  <Droplets className="w-4 h-4" />
+                  <span>Humidity: {weather.main.humidity}%</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/80">
+                  <Waves className="w-4 h-4" />
+                  <span>Wind: {weather.wind.speed} m/s</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/80">
+                  <Thermometer className="w-4 h-4" />
+                  <span>Feels like: {Math.round(weather.main.feels_like)}°C</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/80">
+                  <Eye className="w-4 h-4" />
+                  <span>Visibility: {weather.visibility / 1000} km</span>
                 </div>
               </div>
 
               {/* 5-Day Forecast - Improved spacing and readability */}
-              <div className="grid grid-cols-5 gap-2 pt-2 border-t border-white/20">
+              <div className="grid grid-cols-5 gap-2 pt-3 border-t border-white/20">
                 {forecast.map((day, index) => {
                   const WeatherIcon = getWeatherIcon(day.weather[0].id);
                   return (
@@ -146,7 +206,7 @@ export default function Home() {
                       <div className="text-white text-xs font-semibold mb-1">
                         {formatDate(day.dt)}
                       </div>
-                      <WeatherIcon className="w-5 h-5 text-white/90 mb-1" />
+                      <WeatherIcon className="w-5 h-5 text-white/90 mb-1 animate-bounce" style={{ animationDelay: `${index * 0.2}s` }} />
                       <div className="text-white text-xs font-medium">
                         {Math.round(day.main.temp)}°
                       </div>
@@ -158,47 +218,101 @@ export default function Home() {
           </div>
         )}
 
-        {/* Main Content - Optimized spacing and typography */}
-        <main className="flex flex-col justify-center items-center px-6 text-center pt-16 pb-8">
-          {/* Main Slogan - Enhanced typography and spacing */}
-          <h2 
-            className="text-3xl md:text-3xl font-bold leading-tight mb-4 max-w-md"
-            style={{ 
-              textShadow: '2px 2px 0px black, 3px 3px 6px rgba(0,0,0,0.9)',
-            }}
-            data-testid="main-slogan"
-          >
-            <span style={{ color: 'yellow', WebkitTextStroke: '1px black' }}>Resilient Pio Duran:</span><br />
-            <span style={{ color: 'white', WebkitTextStroke: '1px black' }}>Prepared for Tomorrow</span>
-          </h2>
+        {/* Time display */}
+        <div className="px-6 py-4 text-center">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-full border border-white/20 backdrop-blur-sm">
+            <Zap className="w-4 h-4 text-yellow-400 animate-pulse" />
+            <div className="text-white text-sm font-mono">
+              {formatTime(currentTime)}
+            </div>
+            <div className="text-slate-300 text-xs">
+              {formatDateFull(currentTime)}
+            </div>
+          </div>
+        </div>
 
-          {/* Subtitle - Better spacing and readability */}
-          <p className="text-white text-sm md:text-base mb-8 max-w-md font-medium leading-relaxed" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-            Enhancing disaster preparedness, strengthening community resilience and ensuring safety for all
-          </p>
+        {/* Main Content - Optimized spacing and typography */}
+        <main className="flex flex-col justify-center items-center px-6 text-center pt-8 pb-8 flex-1">
+          {/* Main Slogan - Enhanced typography and spacing */}
+          <div className="mb-6 animate-fade-in">
+            <h2 
+              className="text-3xl md:text-4xl font-bold leading-tight mb-3 max-w-md"
+              data-testid="main-slogan"
+            >
+              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                Resilient Pio Duran:
+              </span>
+              <br />
+              <span className="text-white">
+                Prepared for Tomorrow
+              </span>
+            </h2>
+
+            {/* Subtitle - Better spacing and readability */}
+            <p className="text-slate-200 text-base md:text-lg mb-8 max-w-lg font-medium leading-relaxed opacity-90">
+              Enhancing disaster preparedness, strengthening community resilience and ensuring safety for all
+            </p>
+          </div>
 
           {/* CTA Buttons - Enhanced spacing and visual hierarchy */}
-          <div className="space-y-4 w-full max-w-xs">
+          <div className="space-y-4 w-full max-w-xs animate-slide-up">
             <button
               onClick={() => navigate('/hotlines')}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full flex items-center justify-center gap-3 transition-all shadow-2xl transform hover:scale-105 text-base md:text-lg"
+              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl transform hover:scale-105 hover:shadow-2xl text-lg"
               data-testid="emergency-hotline-btn"
             >
-              <Phone className="w-5 h-5" />
-              Emergency Hotline!
+              <Phone className="w-6 h-6 animate-pulse" />
+              Emergency Hotline
             </button>
 
             <button
               onClick={() => navigate('/report-incident')}
-              className="w-full bg-yellow-500 hover:bg-yellow-600 text-blue-950 font-bold py-3 px-6 rounded-full flex items-center justify-center gap-3 transition-all shadow-2xl transform hover:scale-105 text-base md:text-lg"
+              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-slate-900 font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl transform hover:scale-105 hover:shadow-2xl text-lg"
               data-testid="report-incident-btn"
             >
-              <FileText className="w-5 h-5" />
+              <FileText className="w-6 h-6" />
               Report an Incident
             </button>
           </div>
         </main>
+
       </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slide-down {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out forwards;
+        }
+        
+        .animate-slide-up {
+          animation: slide-up 1s ease-out forwards;
+        }
+        
+        .animate-slide-down {
+          animation: slide-down 0.6s ease-out forwards;
+        }
+        
+        .bg-grid-pattern {
+          background-image: 
+            linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+          background-size: 40px 40px;
+        }
+      `}</style>
     </div>
   );
 }
