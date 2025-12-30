@@ -27,6 +27,8 @@ import {
   Text,
   Check,
   Save,
+  Calendar,
+  Clock,
 } from 'lucide-react';
 import { toast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
@@ -49,13 +51,22 @@ export default function GeotagCamera() {
   const [showAllControls, setShowAllControls] = useState(false);
   const [devices, setDevices] = useState([]);
   const [currentDeviceId, setCurrentDeviceId] = useState(null);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   
   // Title and subtitle states
   const [title, setTitle] = useState('Geotagged Photo');
   const [subtitle, setSubtitle] = useState('Captured with GPS location');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingSubtitle, setIsEditingSubtitle] = useState(false);
-  
+
+  // Update current time every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Video constraints for HD quality
   const videoConstraints = {
     deviceId: currentDeviceId ? { exact: currentDeviceId } : undefined,
@@ -169,7 +180,7 @@ export default function GeotagCamera() {
         // Draw original image
         ctx.drawImage(img, 0, 0);
         
-        // Draw title and subtitle
+        // Draw title at top center
         if (showTitle) {
           ctx.font = 'bold 48px Arial, sans-serif';
           ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
@@ -179,23 +190,78 @@ export default function GeotagCamera() {
           ctx.shadowBlur = 10;
           ctx.fillText(title, canvas.width / 2, 40);
           
-          ctx.font = '28px Arial, sans-serif';
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-          ctx.fillText(subtitle, canvas.width / 2, 100);
-          ctx.shadowBlur = 0;
+          // Draw subtitle at bottom left corner (grouped with other info)
+          if (subtitle) {
+            ctx.font = 'bold 32px Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(subtitle, 50, canvas.height - 150);
+          }
         }
 
-        // Draw logo
+        // Draw logo at bottom left
         if (showLogo && logo) {
           const logoImg = new Image();
           logoImg.onload = () => {
-            const logoSize = Math.min(canvas.width / 8, 150);
-            const margin = 30;
-            ctx.drawImage(logoImg, canvas.width - logoSize - margin, margin, logoSize, logoSize);
+            const logoSize = 80;
+            const margin = 40;
+            ctx.drawImage(logoImg, margin, canvas.height - logoSize - margin, logoSize, logoSize);
+            
+            // Draw location and date/time info next to logo
+            if (showLocation && location) {
+              ctx.font = '18px Arial, sans-serif';
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              
+              // Location
+              const locationText = `${location.latitude?.toFixed(4)}, ${location.longitude?.toFixed(4)}`;
+              ctx.fillText(locationText, margin + logoSize + 20, canvas.height - margin - 60);
+              
+              if (address) {
+                ctx.font = '14px Arial, sans-serif';
+                ctx.fillText(address, margin + logoSize + 20, canvas.height - margin - 35);
+              }
+              
+              // Date and time
+              const dateStr = format(currentDateTime, 'MMM dd, yyyy');
+              const timeStr = format(currentDateTime, 'hh:mm a');
+              ctx.font = '16px Arial, sans-serif';
+              ctx.fillText(dateStr, margin + logoSize + 20, canvas.height - margin - 10);
+              ctx.font = '14px Arial, sans-serif';
+              ctx.fillText(timeStr, margin + logoSize + 20 + ctx.measureText(dateStr).width + 15, canvas.height - margin - 10);
+            }
+            
             resolve(canvas.toDataURL('image/jpeg', 0.95));
           };
           logoImg.src = logo;
         } else {
+          // Draw location and date/time info at bottom left even without logo
+          if (showLocation && location) {
+            ctx.font = '18px Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            
+            const margin = 40;
+            const locationText = `${location.latitude?.toFixed(4)}, ${location.longitude?.toFixed(4)}`;
+            ctx.fillText(locationText, margin, canvas.height - margin - 40);
+            
+            if (address) {
+              ctx.font = '14px Arial, sans-serif';
+              ctx.fillText(address, margin, canvas.height - margin - 15);
+            }
+            
+            // Date and time
+            const dateStr = format(currentDateTime, 'MMM dd, yyyy');
+            const timeStr = format(currentDateTime, 'hh:mm a');
+            ctx.font = '16px Arial, sans-serif';
+            ctx.fillText(dateStr, margin, canvas.height - margin + 15);
+            ctx.font = '14px Arial, sans-serif';
+            ctx.fillText(timeStr, margin + ctx.measureText(dateStr).width + 15, canvas.height - margin + 15);
+          }
+          
           resolve(canvas.toDataURL('image/jpeg', 0.95));
         }
       };
@@ -396,35 +462,62 @@ export default function GeotagCamera() {
             </div>
           )}
 
-          {/* Location Badge */}
-          {showLocation && location && !capturedImage && (
-            <div className="absolute top-4 left-4 bg-blue-900/90 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center gap-2 border border-blue-500/50 shadow-lg z-10">
-              <MapPin className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-white font-medium">
-                {location.latitude?.toFixed(4)}, {location.longitude?.toFixed(4)}
-              </span>
-              {address && (
-                <span className="text-xs text-blue-300 ml-2 truncate max-w-[150px]">
-                  {address}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Title & Subtitle Display (Live View) */}
+          {/* Title Display (Center) */}
           {showTitle && !capturedImage && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none z-10">
+            <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 text-center pointer-events-none z-10">
               <div className="bg-black/50 backdrop-blur-sm rounded-xl p-6 max-w-lg">
                 <h2 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">{title}</h2>
-                <p className="text-xl text-gray-200 drop-shadow-lg">{subtitle}</p>
               </div>
             </div>
           )}
 
-          {/* Logo Display */}
-          {showLogo && logo && !capturedImage && (
-            <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md rounded-lg p-2 border border-white/30 shadow-lg z-10">
-              <img src={logo} alt="Logo" className="h-16 w-16 object-contain" />
+          {/* Bottom Left Overlay Group */}
+          {!capturedImage && (
+            <div className="absolute bottom-20 left-6 pointer-events-none z-10 flex flex-col items-start space-y-2 max-w-sm">
+              {/* Logo */}
+              {showLogo && logo && (
+                <div className="bg-white/20 backdrop-blur-md rounded-lg p-2 border border-white/30 shadow-lg mb-2">
+                  <img src={logo} alt="Logo" className="h-16 w-16 object-contain" />
+                </div>
+              )}
+              
+              {/* Subtitle */}
+              {showTitle && subtitle && (
+                <div className="bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/20 shadow-lg">
+                  <p className="text-xl font-semibold text-white drop-shadow-lg">{subtitle}</p>
+                </div>
+              )}
+              
+              {/* Location Info */}
+              {showLocation && location && (
+                <div className="bg-blue-900/90 backdrop-blur-sm rounded-lg px-4 py-3 border border-blue-500/50 shadow-lg space-y-1">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-blue-400" />
+                    <span className="text-sm text-white font-medium">
+                      {location.latitude?.toFixed(4)}, {location.longitude?.toFixed(4)}
+                    </span>
+                  </div>
+                  {address && (
+                    <p className="text-xs text-blue-300 truncate max-w-[250px] pl-6">
+                      {address}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Date and Time */}
+              <div className="bg-slate-800/90 backdrop-blur-sm rounded-lg px-4 py-3 border border-slate-600/50 shadow-lg">
+                <div className="flex items-center gap-2 text-white">
+                  <Calendar className="w-4 h-4 text-slate-300" />
+                  <span className="text-sm font-medium">
+                    {format(currentDateTime, 'MMM dd, yyyy')}
+                  </span>
+                  <Clock className="w-4 h-4 text-slate-300 ml-2" />
+                  <span className="text-sm font-medium">
+                    {format(currentDateTime, 'hh:mm:ss a')}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 
