@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
-import { FileText, Plus, Save, Trash2, Users, MapPin, Phone, Home, AlertCircle, Cloud, CloudOff, Waves, Mountain, CloudLightning, Wind, Flame, Sun, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { userAPI } from '../utils/api';
+import { FileText, Plus, Save, Trash2, Users, MapPin, Phone, Home, AlertCircle, Waves, Mountain, CloudLightning, Wind, Flame, Sun, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 
 const defaultPlan = {
   familyMembers: [],
@@ -237,68 +235,23 @@ const disasters = [
 ];
 
 export default function EmergencyPlan() {
-  const { isAuthenticated, user } = useAuth();
-  const [plan, setPlan] = useState(() => {
+    const [plan, setPlan] = useState(() => {
     const saved = localStorage.getItem('emergency-plan');
     return saved ? JSON.parse(saved) : defaultPlan;
   });
   const [saved, setSaved] = useState(false);
   const [activeSection, setActiveSection] = useState('guidelines');
-  const [syncing, setSyncing] = useState(false);
-  const [syncStatus, setSyncStatus] = useState('local'); // 'local', 'synced', 'error'
-  const [expandedDisasters, setExpandedDisasters] = useState({});
+      const [expandedDisasters, setExpandedDisasters] = useState({});
 
-  // Load plan from backend if user is authenticated
-  useEffect(() => {
-    const loadPlanFromBackend = async () => {
-      if (isAuthenticated) {
-        try {
-          const response = await userAPI.getEmergencyPlan();
-          if (response.data.plan && response.data.plan.plan_data) {
-            setPlan(response.data.plan.plan_data);
-            localStorage.setItem('emergency-plan', JSON.stringify(response.data.plan.plan_data));
-            setSyncStatus('synced');
-          }
-        } catch (error) {
-          console.error('Failed to load plan from backend:', error);
-          setSyncStatus('error');
-        }
-      }
-    };
-
-    loadPlanFromBackend();
-  }, [isAuthenticated]);
-
+  
   useEffect(() => {
     localStorage.setItem('emergency-plan', JSON.stringify(plan));
-    if (isAuthenticated && syncStatus === 'synced') {
-      setSyncStatus('local'); // Mark as having local changes
-    }
-  }, [plan, isAuthenticated, syncStatus]);
+  }, [plan]);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     localStorage.setItem('emergency-plan', JSON.stringify(plan));
-    
-    // Sync to backend if user is authenticated
-    if (isAuthenticated) {
-      setSyncing(true);
-      try {
-        await userAPI.saveEmergencyPlan(plan);
-        setSyncStatus('synced');
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-      } catch (error) {
-        console.error('Failed to sync plan to backend:', error);
-        setSyncStatus('error');
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-      } finally {
-        setSyncing(false);
-      }
-    } else {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   const addFamilyMember = () => {
@@ -380,11 +333,9 @@ export default function EmergencyPlan() {
       <main className="px-4 py-6 max-w-2xl mx-auto space-y-6">
         {/* Save Success Message */}
         {saved && (
-          <div className={`p-4 rounded-xl flex items-center gap-3 animate-fadeIn ${
-            syncStatus === 'error' ? 'bg-orange-500' : 'bg-green-500'
-          } text-white`} data-testid="save-success">
+          <div className="p-4 rounded-xl flex items-center gap-3 animate-fadeIn bg-green-500 text-white" data-testid="save-success">
             <Save className="w-5 h-5" />
-            <span>{syncStatus === 'error' ? 'Saved locally (sync failed)' : 'Emergency plan saved!'}</span>
+            <span>Emergency plan saved!</span>
           </div>
         )}
 
@@ -394,33 +345,11 @@ export default function EmergencyPlan() {
             <h2 className="text-yellow-500 font-bold text-lg">
               {activeSection === 'guidelines' ? 'Disaster Preparedness' : 'Family Emergency Plan'}
             </h2>
-            {isAuthenticated && activeSection !== 'guidelines' && (
-              <div className="flex items-center gap-1.5 text-xs">
-                {syncStatus === 'synced' && (
-                  <div className="flex items-center gap-1 bg-green-500/20 px-2 py-1 rounded-full">
-                    <Cloud className="w-3 h-3 text-green-400" />
-                    <span className="text-green-400">Synced</span>
-                  </div>
-                )}
-                {syncStatus === 'local' && (
-                  <div className="flex items-center gap-1 bg-yellow-500/20 px-2 py-1 rounded-full">
-                    <CloudOff className="w-3 h-3 text-yellow-400" />
-                    <span className="text-yellow-400">Local changes</span>
-                  </div>
-                )}
-                {syncStatus === 'error' && (
-                  <div className="flex items-center gap-1 bg-red-500/20 px-2 py-1 rounded-full">
-                    <AlertCircle className="w-3 h-3 text-red-400" />
-                    <span className="text-red-400">Sync error</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                      </div>
           <p className="text-white/80 text-sm">
             {activeSection === 'guidelines' 
               ? 'Learn what to do before, during, and after different types of emergencies and disasters.'
-              : `Create your family's emergency plan. ${isAuthenticated ? 'Your plan is automatically synced across all devices.' : 'Login to sync across devices.'}`
+              : "Create your family's emergency plan. Your plan is saved on this device."
             }
           </p>
         </div>
@@ -762,12 +691,11 @@ export default function EmergencyPlan() {
         {activeSection !== 'guidelines' && (
           <button
             onClick={handleSave}
-            disabled={syncing}
             className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-blue-950 font-bold py-4 rounded-xl hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid="save-plan-btn"
           >
             <Save className="w-5 h-5" />
-            {syncing ? 'Saving & Syncing...' : 'Save Emergency Plan'}
+            {'Save Emergency Plan'}
           </button>
         )}
       </main>

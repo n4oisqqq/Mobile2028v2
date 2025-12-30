@@ -4,7 +4,7 @@ import { Map as MapIcon, Building2, Hospital, Shield, Landmark, Home, Search, La
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import api from '../utils/api';
+// api removed; using static facilities
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -43,27 +43,47 @@ export default function InteractiveMap() {
   const [selectedFacility, setSelectedFacility] = useState(null);
   const [mapCenter, setMapCenter] = useState([13.0547, 123.5214]);
   const [facilities, setFacilities] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  const fetchFacilities = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await api.get('/api/map/locations');
-      setFacilities(res.data.locations || []);
-    } catch (e) {
-      setError('Failed to load map locations');
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  // Initialize static facilities (unlinked from database)
+  const initFacilities = () => {
+    const staticData = [
+      // Evacuation Centers
+      { id: 'evac-1', type: 'evacuation', name: 'Pio Duran Evacuation Center', address: 'Brgy. Poblacion, Pio Duran, Albay', lat: 13.0565, lng: 123.5123, capacity: 'Capacity: 300 persons', hotline: '0917-772-5016' },
+      { id: 'evac-2', type: 'evacuation', name: 'Community Hall Evac Center', address: 'Brgy. Malipo, Pio Duran, Albay', lat: 13.0471, lng: 123.5302, capacity: 'Capacity: 200 persons' },
+
+      // Hospitals
+      { id: 'hosp-1', type: 'hospital', name: 'Pio Duran Memorial District Hospital', address: 'Brgy. Banawan, Pio Duran, Albay', lat: 13.0602, lng: 123.5209, hotline: '0985-317-1769' },
+      { id: 'hosp-2', type: 'hospital', name: 'Rural Health Unit Pio Duran', address: 'Brgy. Centro, Pio Duran, Albay', lat: 13.0522, lng: 123.5238, hotline: '0927-943-4663' },
+
+      // Police Stations
+      { id: 'pol-1', type: 'police', name: 'PNP - Pio Duran MPS', address: 'Brgy. Centro, Pio Duran, Albay', lat: 13.0538, lng: 123.5201, hotline: '0998-598-5946' },
+      { id: 'pol-2', type: 'police', name: 'Maritime Police Substation', address: 'Coastal Area, Pio Duran, Albay', lat: 13.0421, lng: 123.5159, hotline: '0917-500-2325' },
+
+      // Government Facilities
+      { id: 'gov-1', type: 'government', name: "Mayor's Office", address: 'Municipal Hall, Pio Duran, Albay', lat: 13.0549, lng: 123.5218, hotline: '0961-690-2026' },
+      { id: 'gov-2', type: 'government', name: 'MDRRMO Office', address: 'Municipal Hall Annex, Pio Duran, Albay', lat: 13.0552, lng: 123.5222, hotline: '0917-772-5016' },
+      { id: 'gov-3', type: 'government', name: 'BFP - Pio Duran Fire Station', address: 'Brgy. Centro, Pio Duran, Albay', lat: 13.0519, lng: 123.5197, hotline: '0949-889-7134' },
+      { id: 'gov-4', type: 'government', name: 'PCG - Pio Duran Sub Station', address: 'Port Area, Pio Duran, Albay', lat: 13.0399, lng: 123.5143, hotline: '0970-667-5457' },
+    ];
+    setFacilities(staticData);
   };
 
   useEffect(() => {
-    fetchFacilities();
+    initFacilities();
   }, []);
 
+/**
+   * @example
+   * toggleFilter('hospital')
+   * undefined
+   * @param {string} filterId - ID of the filter to toggle (e.g. 'evacuation', 'hospital').
+   * @returns {void} Updates the activeFilters React state; no direct return value.
+   * @description
+   *   - Uses the functional form of the state setter (prev => ...) to avoid stale closures.
+   *   - Removes the id when present, otherwise appends it (immutably) to the end of the array.
+   *   - Expects filterId to match one of the known facility type ids; triggers a re-render when state changes.
+   */
+//Loading..
   const toggleFilter = (filterId) => {
     setActiveFilters(prev => 
       prev.includes(filterId)
@@ -91,7 +111,7 @@ export default function InteractiveMap() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100" data-testid="interactive-map-page">
+    <div className="min-h-screen mb-16 bg-slate-100" data-testid="interactive-map-page">
       <Header title="INTERACTIVE MAP" showBack icon={MapIcon} />
       
       <main className="px-4 py-4 max-w-4xl mx-auto space-y-4">

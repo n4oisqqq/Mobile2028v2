@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Cloud, AlertTriangle, Wind, Navigation, Gauge, RefreshCw, MapPin, History } from 'lucide-react';
