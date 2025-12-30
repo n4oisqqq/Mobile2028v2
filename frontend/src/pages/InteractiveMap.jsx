@@ -111,7 +111,7 @@ export default function InteractiveMap() {
   };
 
   return (
-    <div className="min-h-screen mb-16 bg-slate-100" data-testid="interactive-map-page">
+    <div className="min-h-screen bg-slate-100" data-testid="interactive-map-page">
       <Header title="INTERACTIVE MAP" showBack icon={MapIcon} />
       
       <main className="px-4 py-4 max-w-4xl mx-auto space-y-4">

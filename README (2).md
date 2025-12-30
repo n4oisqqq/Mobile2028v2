@@ -35,7 +35,7 @@ A comprehensive disaster preparedness and emergency response application for Pio
 │       │   ├── ReportIncident.jsx
 │       │   ├── TyphoonDashboard.jsx
 │       │   ├── InteractiveMap.jsx
-│       │   ├── GoBagChecklist.jsx
+│       │   ├── DisasterGuidelines.jsx
 │       │   ├── SupportResources.jsx
 │       │   └── EmergencyPlan.jsx
 │       └── components/

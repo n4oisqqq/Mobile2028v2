@@ -43,10 +43,10 @@ const modules = [
     animationDelay: '0.3s'
   },
   {
-    title: 'Go Bag Checklist',
+    title: 'Disaster Guidelines',
     icon: Briefcase,
-    route: '/go-bag-checklist',
-    description: 'Emergency kit items',
+    route: '/disaster-guidelines',
+    description: 'before, during, and after',
     color: 'from-yellow-500 to-orange-600',
     animationDelay: '0.4s'
   },

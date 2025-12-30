@@ -11,7 +11,7 @@ import ReportIncident from './pages/ReportIncident';
 import TyphoonDashboard from './pages/TyphoonDashboard';
 import TyphoonHistory from './pages/TyphoonHistory';
 import InteractiveMap from './pages/InteractiveMap';
-import GoBagChecklist from './pages/GoBagChecklist';
+import DisasterGuidelines from './pages/DisasterGuidelines';
 import SupportResources from './pages/SupportResources';
 import EmergencyPlan from './pages/EmergencyPlan';
 import Login from './pages/Login';
@@ -23,8 +23,8 @@ import { OfflineIndicator } from './components/OfflineIndicator';
 function AppContent() {
   const location = useLocation();
   
-  // Show bottom nav bar only on these main tabs (excluding camera)
-  const showBottomNav = ['/', '/dashboard', '/hotlines', '/interactive-map', '/go-bag-checklist'].includes(location.pathname);
+  // Show bottom nav bar on main tabs except Interactive Map and Disaster Guidelines
+  const showBottomNav = ['/', '/dashboard', '/hotlines'].includes(location.pathname);
 
   return (
     <div className="App min-h-screen bg-blue-950 mx-auto" style={{ maxWidth: '430px' }}>
@@ -38,7 +38,7 @@ function AppContent() {
         <Route path="/typhoon-dashboard" element={<TyphoonDashboard />} />
         <Route path="/typhoon-history" element={<TyphoonHistory />} />
         <Route path="/interactive-map" element={<InteractiveMap />} />
-        <Route path="/go-bag-checklist" element={<GoBagChecklist />} />
+        <Route path="/disaster-guidelines" element={<DisasterGuidelines />} />
         <Route path="/support-resources" element={<SupportResources />} />
         <Route path="/emergency-plan" element={<EmergencyPlan />} />
         <Route path="/admin" element={<AdminDashboard />} />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
-import { FileText, Plus, Save, Trash2, Users, MapPin, Phone, Home, AlertCircle, Waves, Mountain, CloudLightning, Wind, Flame, Sun, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Users, MapPin, Phone, Home, AlertCircle, Briefcase, Check, RotateCcw } from 'lucide-react';
 
 const defaultPlan = {
   familyMembers: [],
@@ -22,217 +22,48 @@ const defaultPlan = {
   importantInfo: '',
 };
 
-const disasters = [
-  {
-    id: "storm-surge",
-    title: "Storm Surge & Tsunami",
-    icon: Waves,
-    color: "blue",
-    gradient: "from-blue-500 to-cyan-500",
-    before: [
-      "Know your zone: Is your home, work, or school in a designated evacuation zone?",
-      "Plan multiple evacuation routes inland and to higher ground.",
-      "Learn the natural warning signs: for a tsunami, a strong, long earthquake, a sudden rise or fall in the ocean, a loud 'roaring' sound.",
-      "Heed official warnings immediately. Do not wait.",
-      "Prepare your Go-Bag and have it ready.",
-    ],
-    during: [
-      "IMMEDIATELY move inland and to high ground. Do not stay to watch.",
-      "Go as far inland and as high up as possible. Even a few stories in a sturdy concrete building can make a difference.",
-      "If you are in a boat and time allows, move out to deep water (tsunami waves are less destructive in deep ocean).",
-      "Do not return to the evacuation zone until authorities declare it safe.",
-    ],
-    after: [
-      "Stay away from the coast. Dangerous waves can continue for hours.",
-      "Stay away from damaged buildings, bridges, and infrastructure.",
-      "Be cautious of floodwaters, which may be contaminated or hide debris.",
-      "Listen to official sources for information about safe return and water safety.",
-    ],
-  },
-  {
-    id: "landslide",
-    title: "Landslide",
-    icon: Mountain,
-    color: "amber",
-    gradient: "from-amber-500 to-orange-500",
-    before: [
-      "Learn if your area is prone to landslides.",
-      "Watch for signs like new cracks in foundations, soil moving away from foundations, tilting trees or fences.",
-      "Consult a professional for land-use guidance (e.g., building retaining walls).",
-      "Plan an evacuation route to a safer area, not in the path of potential flow.",
-    ],
-    during: [
-      "If you are in a building, get to the highest level.",
-      "If you are outside and near the path of a landslide, run to the nearest high ground or shelter. Do not try to outrun it.",
-      "If escape is not possible, curl into a tight ball and protect your head.",
-    ],
-    after: [
-      "Stay away from the slide area. There may be a risk of additional slides.",
-      "Check for injured or trapped people near the slide, but do not enter the direct area. Call for professional help.",
-      "Be aware of potential flooding, as landslides can block waterways.",
-      "Report broken utility lines to the authorities.",
-    ],
-  },
-  {
-    id: "thunderstorm",
-    title: "Thunderstorm",
-    icon: CloudLightning,
-    color: "gray",
-    gradient: "from-gray-500 to-slate-600",
-    before: [
-      "Secure or bring inside outdoor objects that could be blown away.",
-      "Unplug sensitive electronic appliances to protect from power surges.",
-      "Listen to weather forecasts for Severe Thunderstorm Warnings.",
-    ],
-    during: [
-      "When Thunder Roars, Go Indoors! There is no safe place outside.",
-      "Avoid corded phones, plumbing, and electrical appliances as lightning can travel through wiring and pipes.",
-      "Stay away from windows and doors.",
-      "If you are in a vehicle, it is a safe alternative. Avoid touching the metal frame.",
-      "If you are caught outside with no shelter, avoid isolated trees, hilltops, and open fields. Crouch low in a ravine or valley.",
-    ],
-    after: [
-      "Stay indoors for at least 30 minutes after the last clap of thunder.",
-      "Watch for downed power lines and report them immediately.",
-      "Check for property damage.",
-    ],
-  },
-  {
-    id: "typhoon",
-    title: "Typhoon / Hurricane",
-    icon: Wind,
-    color: "blue",
-    gradient: "from-blue-600 to-indigo-700",
-    before: [
-      "Know your home's vulnerability to wind and flooding.",
-      "Install storm shutters or pre-cut plywood for windows.",
-      "Secure or bring indoors all outdoor furniture, decorations, trash cans, etc.",
-      "Trim trees and shrubs to make them more wind-resistant.",
-      "Fill your vehicle's gas tank and withdraw some cash.",
-    ],
-    during: [
-      "Stay indoors, away from windows and skylights.",
-      "Take refuge in a small interior room, closet, or hallway on the lowest level that is not prone to flooding.",
-      "Lie on the floor under a sturdy table or other object.",
-      "Do not go outside during the 'eye' of the storm; the worst winds will resume shortly from the opposite direction.",
-    ],
-    after: [
-      "Listen to official reports to ensure the storm has passed.",
-      "Watch for fallen objects, downed power lines, and damaged structures.",
-      "Do not walk or drive through floodwaters.",
-      "Use flashlights, not candles, due to the risk of gas leaks.",
-      "Check on your neighbors, especially the elderly or those with disabilities.",
-    ],
-  },
-  {
-    id: "flood",
-    title: "Flood",
-    icon: Waves,
-    color: "cyan",
-    gradient: "from-cyan-500 to-teal-500",
-    before: [
-      "Know if you are in a floodplain.",
-      "Consider purchasing flood insurance.",
-      "Elevate critical utilities (furnace, water heater, electrical panel).",
-      "Have a plan to move to higher floors if needed.",
-    ],
-    during: [
-      "Turn Around, Don't Drown! Do not walk, swim, or drive through floodwaters. Six inches of moving water can knock you down; one foot can sweep a vehicle away.",
-      "Evacuate if told to do so.",
-      "If trapped in a building, go to its highest level. Do not enter a closed attic.",
-      "If trapped in a vehicle, stay inside. If water is rising inside the vehicle, seek refuge on the roof.",
-    ],
-    after: [
-      "Return home only when authorities say it is safe.",
-      "Avoid standing water, which may be electrically charged or contaminated.",
-      "Wear heavy gloves and boots during cleanup.",
-      "Photograph damage for insurance claims.",
-      "Be aware that floodwater can weaken roads and structures.",
-    ],
-  },
-  {
-    id: "earthquake",
-    title: "Earthquake",
-    icon: Mountain,
-    color: "stone",
-    gradient: "from-stone-500 to-gray-600",
-    before: [
-      "'Drop, Cover, and Hold On' is the single most important preparedness action.",
-      "Secure heavy furniture, appliances, and water heaters to walls.",
-      "Know how to turn off your gas (if you smell a leak) and water.",
-      "Store heavy and breakable objects on low shelves.",
-    ],
-    during: [
-      "DROP onto your hands and knees.",
-      "COVER your head and neck under a sturdy table or desk. If no shelter is nearby, get down near an interior wall and cover your head and neck with your arms.",
-      "HOLD ON to your shelter until the shaking stops.",
-      "If in bed, stay there and cover your head with a pillow.",
-      "Do not run outside. The danger is from falling debris and glass.",
-    ],
-    after: [
-      "Expect aftershocks. Drop, Cover, and Hold On when they occur.",
-      "Check yourself and others for injuries.",
-      "If you are in a damaged building, get out and move to an open space.",
-      "If you smell gas, evacuate immediately and report it.",
-      "Avoid using phones except for life-threatening emergencies.",
-    ],
-  },
-  {
-    id: "fire",
-    title: "Fire (Wildfire / Structure)",
-    icon: Flame,
-    color: "red",
-    gradient: "from-red-500 to-orange-500",
-    before: [
-      "Create a 'defensible space' by clearing flammable vegetation around your home.",
-      "Have an evacuation plan for your family and pets.",
-      "Keep gutters clean and remove debris from your roof.",
-      "Install and test smoke alarms.",
-      "Have fire extinguishers and know how to use them.",
-      "Plan and practice a family escape route with two ways out of every room.",
-    ],
-    during: [
-      "Evacuate immediately if told to do so.",
-      "If trapped, call 911. Stay in a building or vehicle with windows closed. It is safer than being outside.",
-      "If outside, seek shelter in a low-lying area or body of water. Cover yourself with wet clothing or a blanket.",
-      "GET OUT, STAY OUT. Do not stop for belongings.",
-      "Feel closed doors with the back of your hand before opening. If it's warm, use your second way out.",
-      "Stay low to the floor where the air is less toxic.",
-      "Call the fire department from outside.",
-    ],
-    after: [
-      "Do not re-enter until firefighters say it is safe.",
-      "Be aware of hot embers, smoldering debris, and structural damage.",
-      "Wear a mask to avoid breathing ash.",
-      "Watch for flare-ups.",
-    ],
-  },
-  {
-    id: "heat",
-    title: "Extreme Heat",
-    icon: Sun,
-    color: "orange",
-    gradient: "from-orange-400 to-amber-500",
-    before: [
-      "Ensure you have a way to stay cool (air conditioning, public cooling centers).",
-      "Cover windows with drapes or shades to block direct sun.",
-      "Have a plan for those at high risk (infants, elderly, people with chronic illnesses).",
-    ],
-    during: [
-      "Stay indoors in air conditioning as much as possible.",
-      "Drink plenty of water, even if you don't feel thirsty. Avoid alcohol and caffeine.",
-      "Wear lightweight, light-colored, loose-fitting clothing.",
-      "Take cool showers or baths.",
-      "Never leave children or pets in a closed vehicle.",
-      "Limit strenuous outdoor activity to the coolest parts of the day (early morning/evening).",
-    ],
-    after: [
-      "Continue to hydrate.",
-      "Check on neighbors, family, and friends who may be vulnerable.",
-      "Be aware of signs of heat illness (dizziness, nausea, headache, confusion) and seek medical help if necessary.",
-    ],
-  },
+// Go Bag Checklist data
+const defaultChecklist = [
+  { id: 1, category: 'Documents', item: 'Valid IDs (Photocopy)', checked: false },
+  { id: 2, category: 'Documents', item: 'Insurance documents', checked: false },
+  { id: 3, category: 'Documents', item: 'Emergency contact list', checked: false },
+  { id: 4, category: 'Documents', item: 'Medical records/prescriptions', checked: false },
+  { id: 5, category: 'Water & Food', item: 'Drinking water (3 liters/person)', checked: false },
+  { id: 6, category: 'Water & Food', item: 'Canned goods (3-day supply)', checked: false },
+  { id: 7, category: 'Water & Food', item: 'Ready-to-eat food', checked: false },
+  { id: 8, category: 'Water & Food', item: 'Can opener', checked: false },
+  { id: 9, category: 'First Aid', item: 'First aid kit', checked: false },
+  { id: 10, category: 'First Aid', item: 'Prescription medications', checked: false },
+  { id: 11, category: 'First Aid', item: 'Pain relievers', checked: false },
+  { id: 12, category: 'First Aid', item: 'Bandages and antiseptic', checked: false },
+  { id: 13, category: 'Tools & Safety', item: 'Flashlight with extra batteries', checked: false },
+  { id: 14, category: 'Tools & Safety', item: 'Battery-powered radio', checked: false },
+  { id: 15, category: 'Tools & Safety', item: 'Whistle (for signaling)', checked: false },
+  { id: 16, category: 'Tools & Safety', item: 'Multi-tool or knife', checked: false },
+  { id: 17, category: 'Clothing', item: 'Change of clothes', checked: false },
+  { id: 18, category: 'Clothing', item: 'Rain gear/poncho', checked: false },
+  { id: 19, category: 'Clothing', item: 'Sturdy shoes', checked: false },
+  { id: 20, category: 'Clothing', item: 'Blanket or sleeping bag', checked: false },
+  { id: 21, category: 'Communication', item: 'Fully charged power bank', checked: false },
+  { id: 22, category: 'Communication', item: 'Phone charger', checked: false },
+  { id: 23, category: 'Communication', item: 'Emergency cash (small bills)', checked: false },
+  { id: 24, category: 'Hygiene', item: 'Toothbrush and toothpaste', checked: false },
+  { id: 25, category: 'Hygiene', item: 'Soap and hand sanitizer', checked: false },
+  { id: 26, category: 'Hygiene', item: 'Toilet paper', checked: false },
+  { id: 27, category: 'Hygiene', item: 'Face masks', checked: false },
 ];
+
+const categories = ['Documents', 'Water & Food', 'First Aid', 'Tools & Safety', 'Clothing', 'Communication', 'Hygiene'];
+
+const categoryColors = {
+  'Documents': 'bg-blue-500',
+  'Water & Food': 'bg-cyan-500',
+  'First Aid': 'bg-red-500',
+  'Tools & Safety': 'bg-orange-500',
+  'Clothing': 'bg-purple-500',
+  'Communication': 'bg-green-500',
+  'Hygiene': 'bg-pink-500',
+};
 
 export default function EmergencyPlan() {
     const [plan, setPlan] = useState(() => {
@@ -240,13 +71,20 @@ export default function EmergencyPlan() {
     return saved ? JSON.parse(saved) : defaultPlan;
   });
   const [saved, setSaved] = useState(false);
-  const [activeSection, setActiveSection] = useState('guidelines');
-      const [expandedDisasters, setExpandedDisasters] = useState({});
+  const [checklist, setChecklist] = useState(() => {
+    const savedChecklist = localStorage.getItem('gobag-checklist');
+    return savedChecklist ? JSON.parse(savedChecklist) : defaultChecklist;
+  });
+  const [activeSection, setActiveSection] = useState('checklist');
 
   
   useEffect(() => {
     localStorage.setItem('emergency-plan', JSON.stringify(plan));
   }, [plan]);
+
+  useEffect(() => {
+    localStorage.setItem('gobag-checklist', JSON.stringify(checklist));
+  }, [checklist]);
 
   const handleSave = () => {
     localStorage.setItem('emergency-plan', JSON.stringify(plan));
@@ -310,15 +148,36 @@ export default function EmergencyPlan() {
     }));
   };
 
-  const toggleDisaster = (id) => {
-    setExpandedDisasters(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
+  const toggleItem = (id) => {
+    setChecklist(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, checked: !item.checked } : item
+      )
+    );
   };
 
+  const resetChecklist = () => {
+    if (window.confirm('Reset all items to unchecked?')) {
+      setChecklist(prev => prev.map(item => ({ ...item, checked: false })));
+    }
+  };
+
+  const resetToDefault = () => {
+    if (window.confirm('Reset to default checklist? This will remove any custom items.')) {
+      setChecklist(defaultChecklist);
+    }
+  };
+
+  const checkedCount = checklist.filter(i => i.checked).length;
+  const progress = Math.round((checkedCount / checklist.length) * 100);
+
+  const groupedItems = categories.map(cat => ({
+    category: cat,
+    items: checklist.filter(item => item.category === cat)
+  })).filter(group => group.items.length > 0);
+
   const sections = [
-    { id: 'guidelines', label: 'Guidelines', icon: BookOpen },
+    { id: 'checklist', label: 'Go Bag Checklist', icon: Briefcase },
     { id: 'family', label: 'Family', icon: Users },
     { id: 'contacts', label: 'Contacts', icon: Phone },
     { id: 'meeting', label: 'Meeting Points', icon: MapPin },
@@ -342,16 +201,9 @@ export default function EmergencyPlan() {
         {/* Info Card */}
         <div className="bg-blue-950 rounded-xl p-4" data-testid="info-card">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-yellow-500 font-bold text-lg">
-              {activeSection === 'guidelines' ? 'Disaster Preparedness' : 'Family Emergency Plan'}
-            </h2>
-                      </div>
-          <p className="text-white/80 text-sm">
-            {activeSection === 'guidelines' 
-              ? 'Learn what to do before, during, and after different types of emergencies and disasters.'
-              : "Create your family's emergency plan. Your plan is saved on this device."
-            }
-          </p>
+            <h2 className="text-yellow-500 font-bold text-lg">Family Emergency Plan</h2>
+          </div>
+          <p className="text-white/80 text-sm">Create your family's emergency plan. Your plan is saved on this device.</p>
         </div>
 
         {/* Section Tabs */}
@@ -373,97 +225,101 @@ export default function EmergencyPlan() {
           ))}
         </div>
 
-        {/* Disaster Guidelines Section */}
-        {activeSection === 'guidelines' && (
-          <div className="space-y-3" data-testid="guidelines-section">
-            {disasters.map((disaster) => {
-              const Icon = disaster.icon;
-              const isExpanded = expandedDisasters[disaster.id];
-              
-              return (
-                <div 
-                  key={disaster.id} 
-                  className="bg-white rounded-xl shadow-md overflow-hidden"
-                  data-testid={`disaster-${disaster.id}`}
-                >
-                  {/* Disaster Header */}
-                  <button
-                    onClick={() => toggleDisaster(disaster.id)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
-                    data-testid={`disaster-toggle-${disaster.id}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-xl bg-gradient-to-br ${disaster.gradient}`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="text-slate-900 font-semibold text-left">
-                        {disaster.title}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {isExpanded ? (
-                        <ChevronUp className="w-5 h-5 text-slate-400" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-slate-400" />
-                      )}
-                    </div>
-                  </button>
-
-                  {/* Expanded Content */}
-                  {isExpanded && (
-                    <div className="px-4 pb-4 space-y-4 animate-fadeIn" data-testid={`disaster-content-${disaster.id}`}>
-                      {/* Before */}
-                      <div className="bg-blue-50 rounded-xl p-4">
-                        <h4 className="text-blue-900 font-bold mb-3 flex items-center gap-2">
-                          <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">BEFORE</span>
-                        </h4>
-                        <ul className="space-y-2">
-                          {disaster.before.map((item, index) => (
-                            <li key={index} className="text-slate-700 text-sm flex gap-2">
-                              <span className="text-blue-500 mt-1">•</span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* During */}
-                      <div className="bg-red-50 rounded-xl p-4">
-                        <h4 className="text-red-900 font-bold mb-3 flex items-center gap-2">
-                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">DURING</span>
-                        </h4>
-                        <ul className="space-y-2">
-                          {disaster.during.map((item, index) => (
-                            <li key={index} className="text-slate-700 text-sm flex gap-2">
-                              <span className="text-red-500 mt-1">•</span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* After */}
-                      <div className="bg-green-50 rounded-xl p-4">
-                        <h4 className="text-green-900 font-bold mb-3 flex items-center gap-2">
-                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">AFTER</span>
-                        </h4>
-                        <ul className="space-y-2">
-                          {disaster.after.map((item, index) => (
-                            <li key={index} className="text-slate-700 text-sm flex gap-2">
-                              <span className="text-green-500 mt-1">•</span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
+        {/* Go Bag Checklist Section */}
+        {activeSection === 'checklist' && (
+          <div className="space-y-6" data-testid="checklist-section">
+            {/* Progress Card */}
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-slate-200" data-testid="progress-card">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-blue-950 font-bold text-lg">Preparation Progress</h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-950 font-bold text-xl">{progress}%</span>
                 </div>
-              );
-            })}
+              </div>
+              <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden mb-3">
+                <div 
+                  className="h-full bg-yellow-500 transition-all duration-700 ease-out rounded-full"
+                  style={{ width: `${progress}%` }}
+                  data-testid="progress-bar"
+                />
+              </div>
+              <p className="text-slate-600 text-sm">
+                {checkedCount} of {checklist.length} items ready
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={resetChecklist}
+                className="flex-1 flex items-center justify-center gap-2 bg-blue-950 text-white font-semibold py-3 rounded-xl hover:bg-blue-800 transition-all duration-300 transform hover:scale-105"
+                data-testid="reset-checks-btn"
+                title="Uncheck all items"
+              >
+                <RotateCcw className="w-5 h-5" />
+                Reset All
+              </button>
+            </div>
+
+            {/* Checklist by Category */}
+            <div className="space-y-4" data-testid="checklist-categories">
+              {groupedItems.map(({ category, items }) => (
+                <div 
+                  key={category} 
+                  className="bg-white rounded-xl overflow-hidden shadow-md border border-slate-200 transform transition-all duration-300 hover:shadow-lg"
+                >
+                  <div className={`p-4 ${categoryColors[category]} flex items-center justify-between`}>
+                    <h3 className="text-white font-bold text-base">{category}</h3>
+                    <span className="text-white/80 text-sm">
+                      {items.filter(i => i.checked).length}/{items.length}
+                    </span>
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="checklist-item flex items-center justify-between p-4 hover:bg-slate-50 transition-colors duration-200"
+                        data-testid={`checklist-item-${item.id}`}
+                      >
+                        <button
+                          onClick={() => toggleItem(item.id)}
+                          className="flex items-center gap-3 flex-1"
+                          data-testid={`toggle-item-${item.id}`}
+                        >
+                          <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${
+                            item.checked 
+                              ? 'bg-green-500 border-green-500 transform scale-110' 
+                              : 'border-slate-300'
+                          }`}>
+                            {item.checked && <Check className="w-4 h-4 text-white" />}
+                          </div>
+                          <span className={`text-sm transition-all duration-300 ${
+                            item.checked 
+                              ? 'text-slate-500 line-through' 
+                              : 'text-slate-700'
+                          }`}>
+                            {item.item}
+                          </span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Reset Button */}
+            <button
+              onClick={resetToDefault}
+              className="w-full text-blue-950 text-sm py-3 bg-yellow-500 hover:bg-yellow-400 rounded-xl transition-all duration-300 transform hover:scale-105 font-semibold"
+              data-testid="reset-default-btn"
+            >
+              Reset to Default Checklist
+            </button>
           </div>
         )}
 
+        
         {/* Family Members Section */}
         {activeSection === 'family' && (
           <div className="bg-white rounded-xl p-4 space-y-4" data-testid="family-section">
@@ -688,7 +544,7 @@ export default function EmergencyPlan() {
         )}
 
         {/* Save Button */}
-        {activeSection !== 'guidelines' && (
+        {true && (
           <button
             onClick={handleSave}
             className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-blue-950 font-bold py-4 rounded-xl hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
