@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Header } from '../components/Header';
-import { BookOpen, ChevronDown, ChevronUp, Waves, Mountain, CloudLightning, Wind, Flame, Sun } from 'lucide-react';
+import { BookOpen, ChevronDown, ChevronUp, Waves, Mountain, CloudLightning, Wind, Flame, Sun, HeartPulse } from 'lucide-react';
 
 const disasters = [
   {
@@ -206,8 +206,45 @@ const disasters = [
   },
 ];
 
+const pandemicGuidelines = {
+  id: 'pandemic',
+  title: 'Pandemic/Health Emergency',
+  icon: HeartPulse,
+  gradient: 'from-red-500 to-pink-500',
+  prevention: [
+    "Hand Hygiene: Wash hands with soap and water for at least 20 seconds, especially after being in public, before eating, and after coughing/sneezing. Use alcohol-based hand sanitizer (at least 60% alcohol) when soap is unavailable.",
+    "Respiratory Etiquette: Wear a well-fitting, high-quality mask (e.g., N95, KN95, or surgical mask) in crowded indoor spaces or areas of high community transmission. Cough/sneeze into your elbow or a tissue, not your hands.",
+    "Environmental Measures: Improve indoor ventilation by opening windows, using HEPA filters, or meeting outdoors when possible. Regularly disinfect high-touch surfaces (doorknobs, light switches, countertops, electronics) using EPA-approved disinfectants.",
+    "Vaccination: Stay current with recommended vaccines (e.g., annual flu shot, COVID-19 boosters) as they are a critical tool to reduce severity and transmission."
+  ],
+  preparedness: [
+    "Essential Supplies: Maintain a 2-week supply of prescription medications, over-the-counter fever/pain reducers, cough/cold medicine, electrolytes, vitamins, and first-aid items. Include a working thermometer, pulse oximeter, and extra hygiene supplies (soap, sanitizer, tissues, toilet paper, menstrual products).",
+    "Food & Water: Keep a 2-week supply of non-perishable food, bottled water (1 gallon per person per day), and pet supplies. Prioritize foods that require minimal preparation.",
+    "Documentation: Keep digital and physical copies of critical documents: medical records (insurance cards, vaccination history, prescriptions), emergency contacts, and physician phone numbers. Store digital copies in a secure, offline drive or cloud service.",
+    "Emergency Plan: Designate a specific room/bathroom for isolation if needed. Create a household communication plan, including a single point-of-contact if family members are separated. Plan for childcare, pet care, and elder care if you become ill."
+  ],
+  isolation: [
+    "Isolation Protocol: Immediately isolate any household member showing symptoms or testing positive. They should use a separate bedroom and bathroom if possible. Meals should be delivered to their door.",
+    "Caregiver & Household Safety: If caring for a sick person, wear a mask and gloves when in their room. Open windows to improve airflow. The sick person should wear a mask if others must be near them. Avoid sharing personal items.",
+    "Disinfection: Clean the sick person’s room and bathroom regularly. Handle their laundry with gloves; wash with the warmest appropriate setting. Daily disinfect all shared high-touch surfaces (refrigerator handles, remote controls, faucets).",
+    "Symptom Monitoring: Use trusted symptom-checker tools (e.g., CDC, NHS apps) and track fever, oxygen levels (with a pulse oximeter), and breathing difficulty. Know the specific 'danger signs' for the illness in question (e.g., shortness of breath, persistent chest pain, confusion, bluish lips) that warrant immediate medical care."
+  ],
+  community: [
+    "Local Resource Mapping: Identify locations and procedures for local testing sites, respiratory clinics, pharmacy delivery options, and designated hospitals before an emergency. Know your local health department's website and alert system.",
+    "Communication Networks: Join or establish neighborhood communication groups (e.g., WhatsApp, text chains, Nextdoor) to share reliable information, offer mutual aid (grocery runs for high-risk neighbors), and coordinate community support.",
+    "Information Hygiene: Obtain information only from official, trusted sources (e.g., WHO, CDC, local public health authorities). Be aware of misinformation and verify alarming news before sharing.",
+    "Support Systems: Check on vulnerable neighbors, elderly, or those living alone. Consider organizing a community 'buddy system' for regular wellness checks and resource sharing during a severe outbreak."
+  ],
+  mentalHealth: [
+    "Stress Management: Acknowledge the stress of prolonged emergencies. Maintain routines where possible, take breaks from news/social media, and practice mindfulness or gentle exercise.",
+    "Social Connection: Combat isolation through virtual check-ins, phone calls, and safe outdoor/distanced gatherings. Prioritize connection, especially if living alone.",
+    "Seek Help: Recognize signs of acute distress (extreme anxiety, depression, insomnia) and utilize telemedicine, mental health hotlines, or employee assistance programs (EAP) for professional support."
+  ]
+};
+
 export default function GoBagChecklist() {
   const [expanded, setExpanded] = useState({});
+  const [activeTab, setActiveTab] = useState('disaster');
 
   const toggle = (id) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -218,80 +255,200 @@ export default function GoBagChecklist() {
       <Header title="DISASTER GUIDELINES" showBack icon={BookOpen} />
 
       <main className="px-4 py-6 max-w-2xl mx-auto space-y-3">
-        {disasters.map((d) => {
-          const Icon = d.icon;
-          const isOpen = !!expanded[d.id];
-          return (
-            <div key={d.id} className="bg-white rounded-xl shadow-md overflow-hidden" data-testid={`disaster-${d.id}`}>
-              <button
-                onClick={() => toggle(d.id)}
-                className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
-                data-testid={`disaster-toggle-${d.id}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${d.gradient}`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-slate-900 font-semibold text-left">{d.title}</h3>
+        {/* Tab Navigation */}
+        <div className="flex bg-white rounded-xl shadow-md overflow-hidden">
+          <button
+            onClick={() => setActiveTab('disaster')}
+            className={`flex-1 py-3 px-4 text-center font-semibold transition-colors ${
+              activeTab === 'disaster' 
+                ? 'bg-yellow-500 text-blue-950' 
+                : 'bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            Disaster Guidelines
+          </button>
+          <button
+            onClick={() => setActiveTab('pandemic')}
+            className={`flex-1 py-3 px-4 text-center font-semibold transition-colors ${
+              activeTab === 'pandemic' 
+                ? 'bg-yellow-500 text-blue-950' 
+                : 'bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            Pandemic Guidelines
+          </button>
+        </div>
+
+        {/* Disaster Guidelines Tab */}
+        {activeTab === 'disaster' && (
+          <div className="space-y-3">
+            {disasters.map((d) => {
+              const Icon = d.icon;
+              const isOpen = !!expanded[d.id];
+              return (
+                <div key={d.id} className="bg-white rounded-xl shadow-md overflow-hidden" data-testid={`disaster-${d.id}`}>
+                  <button
+                    onClick={() => toggle(d.id)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                    data-testid={`disaster-toggle-${d.id}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-3 rounded-xl bg-gradient-to-br ${d.gradient}`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-slate-900 font-semibold text-left">{d.title}</h3>
+                    </div>
+                    {isOpen ? (
+                      <ChevronUp className="w-5 h-5 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-slate-400" />
+                    )}
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-4 pb-4 space-y-4 animate-fadeIn" data-testid={`disaster-content-${d.id}`}>
+                      {/* Before */}
+                      <div className="bg-blue-50 rounded-xl p-4">
+                        <h4 className="text-blue-900 font-bold mb-3 flex items-center gap-2">
+                          <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">BEFORE</span>
+                        </h4>
+                        <ul className="space-y-2">
+                          {d.before.map((item, idx) => (
+                            <li key={idx} className="text-slate-700 text-sm flex gap-2">
+                              <span className="text-blue-500 mt-1">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* During */}
+                      <div className="bg-red-50 rounded-xl p-4">
+                        <h4 className="text-red-900 font-bold mb-3 flex items-center gap-2">
+                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">DURING</span>
+                        </h4>
+                        <ul className="space-y-2">
+                          {d.during.map((item, idx) => (
+                            <li key={idx} className="text-slate-700 text-sm flex gap-2">
+                              <span className="text-red-500 mt-1">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* After */}
+                      <div className="bg-green-50 rounded-xl p-4">
+                        <h4 className="text-green-900 font-bold mb-3 flex items-center gap-2">
+                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">AFTER</span>
+                        </h4>
+                        <ul className="space-y-2">
+                          {d.after.map((item, idx) => (
+                            <li key={idx} className="text-slate-700 text-sm flex gap-2">
+                              <span className="text-green-500 mt-1">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {isOpen ? (
-                  <ChevronUp className="w-5 h-5 text-slate-400" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-slate-400" />
-                )}
-              </button>
+              );
+            })}
+          </div>
+        )}
 
-              {isOpen && (
-                <div className="px-4 pb-4 space-y-4 animate-fadeIn" data-testid={`disaster-content-${d.id}`}>
-                  {/* Before */}
-                  <div className="bg-blue-50 rounded-xl p-4">
-                    <h4 className="text-blue-900 font-bold mb-3 flex items-center gap-2">
-                      <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">BEFORE</span>
-                    </h4>
-                    <ul className="space-y-2">
-                      {d.before.map((item, idx) => (
-                        <li key={idx} className="text-slate-700 text-sm flex gap-2">
-                          <span className="text-blue-500 mt-1">•</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* During */}
-                  <div className="bg-red-50 rounded-xl p-4">
-                    <h4 className="text-red-900 font-bold mb-3 flex items-center gap-2">
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">DURING</span>
-                    </h4>
-                    <ul className="space-y-2">
-                      {d.during.map((item, idx) => (
-                        <li key={idx} className="text-slate-700 text-sm flex gap-2">
-                          <span className="text-red-500 mt-1">•</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* After */}
-                  <div className="bg-green-50 rounded-xl p-4">
-                    <h4 className="text-green-900 font-bold mb-3 flex items-center gap-2">
-                      <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">AFTER</span>
-                    </h4>
-                    <ul className="space-y-2">
-                      {d.after.map((item, idx) => (
-                        <li key={idx} className="text-slate-700 text-sm flex gap-2">
-                          <span className="text-green-500 mt-1">•</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+        {/* Pandemic Guidelines Tab */}
+        {activeTab === 'pandemic' && (
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-3 rounded-xl bg-gradient-to-br ${pandemicGuidelines.gradient}`}>
+                  <HeartPulse className="w-6 h-6 text-white" />
                 </div>
-              )}
+                <h3 className="text-slate-900 font-semibold text-left">{pandemicGuidelines.title}</h3>
+              </div>
             </div>
-          );
-        })}
+
+            <div className="px-4 pb-4 space-y-4">
+              {/* Prevention */}
+              <div className="bg-blue-50 rounded-xl p-4">
+                <h4 className="text-blue-900 font-bold mb-3 flex items-center gap-2">
+                  <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">PREVENTION</span>
+                </h4>
+                <ul className="space-y-2">
+                  {pandemicGuidelines.prevention.map((item, idx) => (
+                    <li key={idx} className="text-slate-700 text-sm flex gap-2">
+                      <span className="text-blue-500 mt-1">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Preparedness */}
+              <div className="bg-amber-50 rounded-xl p-4">
+                <h4 className="text-amber-900 font-bold mb-3 flex items-center gap-2">
+                  <span className="bg-amber-500 text-white text-xs px-2 py-1 rounded-full">PREPAREDNESS</span>
+                </h4>
+                <ul className="space-y-2">
+                  {pandemicGuidelines.preparedness.map((item, idx) => (
+                    <li key={idx} className="text-slate-700 text-sm flex gap-2">
+                      <span className="text-amber-500 mt-1">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Isolation */}
+              <div className="bg-red-50 rounded-xl p-4">
+                <h4 className="text-red-900 font-bold mb-3 flex items-center gap-2">
+                  <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">ISOLATION</span>
+                </h4>
+                <ul className="space-y-2">
+                  {pandemicGuidelines.isolation.map((item, idx) => (
+                    <li key={idx} className="text-slate-700 text-sm flex gap-2">
+                      <span className="text-red-500 mt-1">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Community */}
+              <div className="bg-green-50 rounded-xl p-4">
+                <h4 className="text-green-900 font-bold mb-3 flex items-center gap-2">
+                  <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">COMMUNITY</span>
+                </h4>
+                <ul className="space-y-2">
+                  {pandemicGuidelines.community.map((item, idx) => (
+                    <li key={idx} className="text-slate-700 text-sm flex gap-2">
+                      <span className="text-green-500 mt-1">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Mental Health */}
+              <div className="bg-purple-50 rounded-xl p-4">
+                <h4 className="text-purple-900 font-bold mb-3 flex items-center gap-2">
+                  <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full">MENTAL HEALTH</span>
+                </h4>
+                <ul className="space-y-2">
+                  {pandemicGuidelines.mentalHealth.map((item, idx) => (
+                    <li key={idx} className="text-slate-700 text-sm flex gap-2">
+                      <span className="text-purple-500 mt-1">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

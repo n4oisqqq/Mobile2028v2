@@ -118,8 +118,11 @@ export default function Home() {
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center mb-16 bg-no-repeat relative"
-      style={{ backgroundImage: `url(/${backgroundImage})` }}
+      className="min-h-screen bg-cover bg-center bg-no-repeat relative"
+      style={{ 
+        backgroundImage: `url(/${backgroundImage})`,
+        height: '100vh'
+      }}
       data-testid="home-page"
     >
       {/* Animated overlay */}
@@ -236,7 +239,7 @@ export default function Home() {
           {/* Main Slogan - Enhanced typography and spacing */}
           <div className="animate-fade-in">
             <h2 
-              className="text-3xl md:text-4xl font-bold leading-tight mb-2 max-w-md"
+              className="text-3xl md:text-4xl font-bold leading-tight mb-2 max-w-md text-shadow"
               data-testid="main-slogan"
             >
               <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
@@ -249,16 +252,16 @@ export default function Home() {
             </h2>
 
             {/* Subtitle - Better spacing and readability */}
-            <p className="text-slate-200 text-base md:text-lg mb-2 max-w-lg font-medium leading-relaxed">
+            <p className="text-slate-200 text-base md:text-lg mb-2 max-w-lg font-medium leading-relaxed text-shadow">
               Enhancing disaster preparedness, strengthening community resilience and ensuring safety for all
             </p>
           </div>
 
           {/* CTA Buttons - Enhanced spacing and visual hierarchy */}
-          <div className="space-y-4 w-full max-w-xs animate-slide-up">
+          <div className="space-y-4 w-full max-w-xs animate-slide-up mb-16">
             <button
               onClick={() => navigate('/hotlines')}
-              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl transform hover:scale-105 hover:shadow-2xl text-lg"
+              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-2 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl transform hover:scale-105 hover:shadow-2xl text-lg"
               data-testid="emergency-hotline-btn"
             >
               <Phone className="w-6 h-6 animate-pulse" />
@@ -267,7 +270,7 @@ export default function Home() {
 
             <button
               onClick={() => navigate('/report-incident')}
-              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-slate-900 font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl transform hover:scale-105 hover:shadow-2xl text-lg"
+              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-slate-900 font-bold py-2 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl transform hover:scale-105 hover:shadow-2xl text-lg"
               data-testid="report-incident-btn"
             >
               <FileText className="w-6 h-6" />
@@ -311,6 +314,10 @@ export default function Home() {
             linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
           background-size: 40px 40px;
+        }
+        
+        .text-shadow {
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         }
       `}</style>
     </div>

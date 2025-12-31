@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
-import { AlertTriangle, Cloud, Gauge, History, MapPin, Navigation, RefreshCw, Wind } from 'lucide-react';
+import { Cloud, Gauge, History, Navigation, RefreshCw, Wind } from 'lucide-react';
 
 const mockTyphoonData = {
   name: 'Typhoon CARINA',
@@ -63,17 +63,7 @@ export default function TyphoonDashboard() {
         <Header title="TYPHOON DASHBOARD" showBack icon={Cloud} />
         
         <main className="px-4 py-6 max-w-2xl mx-auto space-y-6">
-          {/* Monitoring Alert */}
-          <div className="relative bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-200 rounded-xl p-4 flex items-center gap-3 shadow-lg" data-testid="typhoon-alert">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-100/10 rounded-xl"></div>
-            <div className="relative z-10">
-              <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
-            </div>
-            <div className="relative z-10">
-              <h2 className="text-blue-950 font-bold text-lg">TYPHOON MONITORING</h2>
-              <p className="text-blue-950/70 text-sm">Active weather disturbance detected</p>
-            </div>
-          </div>
+          
 
           {/* Satellite Image */}
           <div className="satellite-container bg-white border-2 border-blue-950/20 rounded-xl overflow-hidden shadow-lg" data-testid="satellite-container">
@@ -104,23 +94,22 @@ export default function TyphoonDashboard() {
           {/* Typhoon Tracking */}
           <div className="bg-white border-2 border-blue-950/20 rounded-xl overflow-hidden shadow-lg" data-testid="typhoon-tracking">
             <div className="p-4 bg-gradient-to-r from-yellow-500 to-yellow-400 border-b border-yellow-200">
-              <h3 className="text-blue-950 font-bold text-lg">Typhoon Tracking</h3>
-              <div className="flex items-center gap-2 mt-1">
-                <MapPin className="w-4 h-4 text-blue-950" />
-                <span className="text-blue-950/80 text-xs">
-                  As of: {new Date().toLocaleTimeString('en-PH', { 
-                    timeZone: 'Asia/Manila',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}, {new Date().toLocaleDateString('en-PH', { 
-                    timeZone: 'Asia/Manila',
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })} • Coordinates: {typhoonData.position}
-                </span>
-              </div>
-            </div>
+  <div className="flex items-center justify-between">
+
+    <div className="flex-1">
+      <h3 className="text-blue-950 font-bold text-lg">Typhoon Tracking</h3>
+    </div>
+    
+
+    <div className="ml-4 flex-shrink-0">
+      <img 
+        src="https://src.meteopilipinas.gov.ph/repo/mtsat-colored/24hour/latest-him-colored.gif" 
+        alt="Typhoon Satellite" 
+        className="w-20 h-15 object-cover rounded-lg shadow-sm border border-yellow-300"
+      />
+    </div>
+  </div>
+</div>
             
             <div className="divide-y divide-blue-950/10">
               <InfoRow 
@@ -128,6 +117,7 @@ export default function TyphoonDashboard() {
                 value={`${typhoonData.name} (${typhoonData.localName})`}
                 highlight={true}
               />
+              <InfoRow label="PAGASA TC Bulletin" value="#5" />
               <InfoRow label="As of" value="03:00 AM, Dec 31, 2025" />
               <InfoRow label="Coordinates" value={typhoonData.position} />
               <InfoRow label="Current Location" value="East of Luzon" />
